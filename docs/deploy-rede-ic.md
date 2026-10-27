@@ -67,7 +67,7 @@ ssh dokku@app.ic.ufba.br config:set cadee-api \
   SIGAA_API_STATUS_DETALHADO=false \
   SIGAA_API_MAX_CONCORRENCIA_SIGAA=32 \
   SIGAA_API_TOKEN_TTL_HORAS=12 \
-  SIGAA_API_ROTAS_PERMITIDAS='/v1/status,/v1/auth/*,/v1/historico,/v1/indices*,/v1/integralizacao,/v1/carga-horaria,/v1/planejamento/*,/v1/grade-horaria.ics,/v1/publico/componentes/*'
+  SIGAA_API_ROTAS_PERMITIDAS='/v1/status,/v1/auth/*,/v1/historico*,/v1/indices*,/v1/integralizacao,/v1/carga-horaria,/v1/planejamento/*,/v1/grade-horaria*,/v1/avaliacoes,/v1/tarefas,/v1/atualizacoes,/v1/notas,/v1/frequencia,/v1/calendario,/v1/mensagens,/v1/documentos/*,/v1/publico/componentes/*,/v1/publico/cursos,/v1/publico/cursos/*'
 ```
 
 * **`FORWARDED_ALLOW_IPS`** é o ponto que mais quebra: é o IP do nginx do Dokku (item 6 do chamado). Errado ou
@@ -77,8 +77,11 @@ ssh dokku@app.ic.ufba.br config:set cadee-api \
   Rede IC, `cadee.app.ic.ufba.br`. Sem barra no fim.
 * **`SIGAA_API_HOSTS` não é usado aqui:** o nginx do Dokku já só repassa o domínio da aplicação, e o healthcheck
   do Dokku chama o contêiner pelo IP (com a lista de hosts ligada, ele daria 400 e o deploy falharia).
-* **`SIGAA_API_ROTAS_PERMITIDAS`** acima é a lista do CADEE. Se a instância for servir outros fronts, junte as
-  rotas deles (ou deixe vazia = todas).
+* **`SIGAA_API_ROTAS_PERMITIDAS`** acima é a lista do CADEE (todas as rotas que o site chama em
+  `src/services/sigaaApi.ts`). **Quando o site ganhar uma chamada nova, a rota entra aqui também**, senão ela dá
+  404 em produção (e funciona na sua máquina, onde a lista é vazia). Se a instância for servir outros fronts, junte
+  as rotas deles (ou deixe vazia = todas). Só mudar a variável não exige novo deploy de código:
+  `config:set` reinicia o contêiner (as sessões caem).
 
 ## 4. Deploy
 

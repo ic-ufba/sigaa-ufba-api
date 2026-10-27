@@ -46,6 +46,38 @@ def test_casamento(caminho, esperado):
     assert permitido(caminho, prefixos, exatos) is esperado
 
 
+# Lista do CADEE (a mesma de docs/deploy-rede-ic.md): tudo que o site chama passa; dado pessoal sensível não.
+CADEE = ("/v1/status,/v1/auth/*,/v1/historico*,/v1/indices*,/v1/integralizacao,/v1/carga-horaria,"
+         "/v1/planejamento/*,/v1/grade-horaria*,/v1/avaliacoes,/v1/tarefas,/v1/atualizacoes,/v1/notas,"
+         "/v1/frequencia,/v1/calendario,/v1/mensagens,/v1/documentos/*,/v1/publico/componentes/*,"
+         "/v1/publico/cursos,/v1/publico/cursos/*")
+
+
+@pytest.mark.parametrize(
+    ("caminho", "esperado"),
+    [
+        ("/v1/auth/login", True),
+        ("/v1/historico/pdf", True),
+        ("/v1/grade-horaria", True),
+        ("/v1/grade-horaria.ics", True),
+        ("/v1/avaliacoes", True),
+        ("/v1/notas", True),
+        ("/v1/publico/cursos", True),
+        ("/v1/publico/cursos/123/turmas", True),
+        ("/v1/publico/componentes/codigo/MATA37/programa", True),
+        ("/v1/documentos/declaracao-vinculo/pdf", True),
+        ("/v1/mensagens", True),
+        ("/v1/me", False),
+        ("/v1/me/dados-pessoais", False),
+        ("/v1/turmas/1/participantes", False),
+        ("/v1/mensagens/9", False),
+    ],
+)
+def test_lista_do_cadee(caminho, esperado):
+    prefixos, exatos = ler_padroes(CADEE)
+    assert permitido(caminho, prefixos, exatos) is esperado
+
+
 def test_item_sem_barra_e_recusado():
     with pytest.raises(ValueError):
         ler_padroes("v1/status")
